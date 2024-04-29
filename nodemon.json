@@ -2,9 +2,9 @@
     "watch": [
         "src"
     ],
-    "ext": "js",
+    "ext": "ts",
     "ignore": [
         "src/public"
     ],
-    "exec": "node app.js"
+    "exec": "ts-node ./app.ts"
 }
