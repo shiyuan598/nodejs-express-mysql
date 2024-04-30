@@ -53,9 +53,9 @@ export function extractValue(domString: string) {
     try {
         const dom = new JSDOM(domString);
         const document = dom.window.document;
-        console.log(document.querySelector("noscript")?.textContent);
+        console.log(document.querySelector("p")?.textContent);
         return {
-            content: document.querySelector("noscript")?.textContent
+            content: document.querySelector("p")?.textContent
         };
     } catch (err) {
         console.error(err);

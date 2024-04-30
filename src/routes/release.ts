@@ -21,7 +21,7 @@ const errorHandler = (response: Response, err: Error) => {
         });
 };
 
-router.get("/list", async (request: Request, response: Response) => {
+router.get("/list", (request: Request, response: Response) => {
     try {
         const data = listFiles(RELEASE_FILE_Path);
         fullFilled(response, data);
@@ -30,9 +30,9 @@ router.get("/list", async (request: Request, response: Response) => {
     }
 });
 
-router.get("/info", async (request: Request, response: Response) => {
+router.get("/info", (request: Request, response: Response) => {
     try {
-        const filePath = request.query.path as string;
+        const filePath = request.query.filePath as string;
         const data = getReleaseInfo(filePath);
         fullFilled(response, data);
     } catch (error) {
