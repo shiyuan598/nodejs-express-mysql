@@ -11,6 +11,10 @@
 
 # production
 /build
+/dist
+
+nohup.out
+server.pid
 
 # misc
 .DS_Store

@@ -13,7 +13,6 @@ export function listFiles(directoryPath: string): FileItem[] {
             const filePath = path.join(directoryPath, file);
             const stats = fs.statSync(filePath);
             if (stats.isFile()) {
-                console.info(stats);
                 const fileName = path.parse(file).name;
                 allFiles.push({
                     name: fileName,
@@ -43,9 +42,8 @@ export function extractValue(domString: string) {
     try {
         const dom = new JSDOM(domString);
         const document = dom.window.document;
-        console.log(document.querySelector("table")?.textContent);
         return {
-            content: document.querySelector("table")?.textContent
+            content: document.querySelector("table")?.outerHTML
         };
     } catch (err) {
         console.error(err);
