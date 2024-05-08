@@ -3,10 +3,6 @@ import path from "path";
 import { JSDOM } from "jsdom";
 import type { FileItem } from "../types/index";
 
-// 定义要读取的目录路径 -- 测试用
-const directoryPath = "/home/wangshiyuan/code/xway-docs/xway-docs-frontend/public";
-const filePath = "/home/wangshiyuan/code/xway-docs/xway-docs-frontend/public/index.html";
-
 export function listFiles(directoryPath: string): FileItem[] {
     let allFiles: FileItem[] = [];
 
@@ -36,12 +32,6 @@ export function listFiles(directoryPath: string): FileItem[] {
 export function readFile(filePath: string): string | null {
     try {
         const data = fs.readFileSync(filePath, "utf8");
-        console.log(data);
-
-        const dom = new JSDOM(data);
-        const document = dom.window.document;
-        console.log(document.querySelector("noscript")?.textContent);
-
         return data;
     } catch (err) {
         console.error(err);
@@ -53,9 +43,9 @@ export function extractValue(domString: string) {
     try {
         const dom = new JSDOM(domString);
         const document = dom.window.document;
-        console.log(document.querySelector("p")?.textContent);
+        console.log(document.querySelector("table")?.textContent);
         return {
-            content: document.querySelector("p")?.textContent
+            content: document.querySelector("table")?.textContent
         };
     } catch (err) {
         console.error(err);

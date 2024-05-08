@@ -7,7 +7,7 @@
     "dev": "nodemon",
     "start": "npm run build:dev && node dist/app.js",
     "build:dev": "tsc",
-    "build:prod": "tsc && ncc build dist/app.js -m -o build"
+    "build:prod": "tsc && ncc build dist/app.js -m -o server"
   },
   "keywords": [],
   "author": "",

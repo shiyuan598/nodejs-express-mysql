@@ -2,7 +2,6 @@ import express, { Request, Response, Router } from "express";
 const router: Router = express.Router();
 import { listFiles, readFile, getReleaseInfo } from "../utils/fileTool";
 import { RELEASE_FILE_Path } from "../../config";
-import type { FileItem } from "../types/index";
 // 响应处理
 const fullFilled = (response: Response, data: object | null) => {
     response.json({
