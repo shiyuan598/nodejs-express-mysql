@@ -18,13 +18,21 @@ npm install -g @vercel/ncc
 
 
 ### DEPLOY
+0.查看桥接网络
+```bash
+docker network ls
+```
+若无，先创建网络
+```bash
+docker network create -d bridge xwayos-net
+```
 1.构建镜像
 ```bash
 docker build -t xwayos-docs-backend:v0.1 .
 ```
 2.启动容器
 ```bash
-docker run -itd --volume /home/wangshiyuan/code/testData:/home/version-files --name xwayos-docs-backend -p 9042:9040 -d xwayos-docs-backend:v0.1
+docker run -itd --volume /home/xway/version-files:/home/version-files --name xwayos-docs-backend --network xwayos-net -p 9042:9040 -d xwayos-docs-backend:v0.1
 ```
 3.进入容器
 ```bash
