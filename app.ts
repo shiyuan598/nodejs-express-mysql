@@ -1,8 +1,9 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import { PORT } from "./config";
 import releaseRoutes from "./src/routes/release";
+import feedbackRoutes from "./src/routes/feedback";
+import {PORT} from "./src/config"
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(cors());
 
 // 注册模块路由
 app.use("/api/release", releaseRoutes);
+app.use("/api/feedback", feedbackRoutes);
 
 // 处理根路径的HTTP请求
 app.get("/", (req: Request, res: Response) => {
