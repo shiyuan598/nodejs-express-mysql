@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
-import Issue from "../model/issue.model";
 import multer from "multer";
+import {getContentType} from "../utils/fileTool";
+import Issue from "../model/issue.model";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -49,27 +50,7 @@ export const getAttachmentById = async (request: Request, response: Response) =>
         const { attachment, filename } = result;
 
         if (attachment) {
-            // 设置适当的 content-type
-            let contentType = "application/octet-stream";
-            if (filename) {
-                const ext = filename.split('.').pop()?.toLowerCase();
-                switch (ext) {
-                    case 'jpg':
-                    case 'jpeg':
-                        contentType = 'image/jpeg';
-                        break;
-                    case 'png':
-                        contentType = 'image/png';
-                        break;
-                    case 'bmp':
-                        contentType = 'image/bmp';
-                        break;
-                    case 'webp':
-                        contentType = 'image/webp';
-                        break;
-                }
-            }
-            response.set("Content-Type", contentType);
+            response.set("Content-Type", getContentType(filename));
             response.send(attachment);
         } else {
             response.status(404).send("Attachment not found");
@@ -99,7 +80,7 @@ export const addIssue = async (request: Request, response: Response) => {
 };
 
 export const updateIssue = async (request: Request, response: Response) => {
-    const id = parseInt(request.body.id);
+    const id = parseInt(request.params.id);
     const { version, title, content } = request.body;
     const attachment = request.file?.buffer;
     const filename = request.file?.originalname;

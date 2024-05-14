@@ -65,3 +65,26 @@ export function getReleaseInfo(filePath: string) {
         return null;
     }
 }
+
+export function getContentType(filename: string) {
+    let contentType = "application/octet-stream";
+    if (filename) {
+        const ext = filename.split(".").pop()?.toLowerCase();
+        switch (ext) {
+            case "jpg":
+            case "jpeg":
+                contentType = "image/jpeg";
+                break;
+            case "png":
+                contentType = "image/png";
+                break;
+            case "bmp":
+                contentType = "image/bmp";
+                break;
+            case "webp":
+                contentType = "image/webp";
+                break;
+        }
+    }
+    return contentType;
+}

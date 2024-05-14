@@ -6,7 +6,7 @@ interface Issue {
     title?: string;
     content: string;
     attachment?: Buffer | null;
-    filename?: string; // 添加 filename 字段
+    filename?: string;
     createtime?: string;
     updatetime?: string;
     state?: number;
@@ -21,12 +21,40 @@ class Issue {
         this.filename = issue.filename;
         this.state = issue.state;
     }
-
     static async create(newIssue: Issue): Promise<any> {
-        const { version, title, content, attachment, filename } = newIssue;
-        const sql = "INSERT INTO issue(`version`, `title`, `content`, `attachment`, `filename`) VALUES (?, ?, ?, ?, ?)";
+        const columns = [];
+        const values = [];
+        const params = [];
+
+        if (newIssue.version !== undefined) {
+            columns.push('`version`');
+            values.push('?');
+            params.push(newIssue.version);
+        }
+        if (newIssue.title !== undefined) {
+            columns.push('`title`');
+            values.push('?');
+            params.push(newIssue.title);
+        }
+        if (newIssue.content !== undefined) {
+            columns.push('`content`');
+            values.push('?');
+            params.push(newIssue.content);
+        }
+        if (newIssue.attachment !== undefined) {
+            columns.push('`attachment`');
+            values.push('?');
+            params.push(newIssue.attachment);
+        }
+        if (newIssue.filename !== undefined) {
+            columns.push('`filename`');
+            values.push('?');
+            params.push(newIssue.filename);
+        }
+
+        const sql = `INSERT INTO issue(${columns.join(', ')}) VALUES (${values.join(', ')})`;
         try {
-            const data = await sqlTool.execute(sql, [version, title, content, attachment, filename]);
+            const data = await sqlTool.execute(sql, params);
             return data;
         } catch (error) {
             throw error;
@@ -35,11 +63,11 @@ class Issue {
 
     static async getAll(version?: string, start?: string, end?: string): Promise<any> {
         let sql = `SELECT i.id AS issueId, i.version AS issueVersion, i.title AS issueTitle, 
-                    i.content AS issueContent, i.attachment AS issueAttachment, i.filename AS issueFilename,
+                    i.content AS issueContent, i.filename AS issueFilename,
                     i.createtime AS issueCreatetime, i.updatetime AS issueUpdatetime, 
                     i.state AS issueState,
                     r.id AS replyId, r.issue_id AS replyIssueId, 
-                    r.content AS replyContent, r.attachment AS replyAttachment, r.filename AS replyFilename
+                    r.content AS replyContent, r.filename AS replyFilename
                 FROM issue i
                 LEFT JOIN reply r ON i.id = r.issue_id
                 WHERE 1 = 1`;
@@ -97,20 +125,39 @@ class Issue {
     }
 
     static async update(id: number, updatedIssue: Issue): Promise<any> {
-        const { version, title, content, attachment, filename } = updatedIssue;
+        const columns = [];
+        const params = [];
+
+        if (updatedIssue.version !== undefined) {
+            columns.push('version = ?');
+            params.push(updatedIssue.version);
+        }
+        if (updatedIssue.title !== undefined) {
+            columns.push('title = ?');
+            params.push(updatedIssue.title);
+        }
+        if (updatedIssue.content !== undefined) {
+            columns.push('content = ?');
+            params.push(updatedIssue.content);
+        }
+        if (updatedIssue.attachment !== undefined) {
+            columns.push('attachment = ?');
+            params.push(updatedIssue.attachment);
+        }
+        if (updatedIssue.filename !== undefined) {
+            columns.push('filename = ?');
+            params.push(updatedIssue.filename);
+        }
+
+        columns.push('updatetime = CURRENT_TIMESTAMP');
+        params.push(id);
+        
         const sql = `
           UPDATE issue 
-          SET 
-              version = ?,
-              title = ?,
-              content = ?,
-              attachment = ?,
-              filename = ?,
-              updatetime = CURRENT_TIMESTAMP
-          WHERE
-              id = ?`;
+          SET ${columns.join(', ')}
+          WHERE id = ?`;
         try {
-            const data = await sqlTool.execute(sql, [version, title, content, attachment, filename, id]);
+            const data = await sqlTool.execute(sql, params);
             return data;
         } catch (error) {
             throw error;
@@ -118,10 +165,7 @@ class Issue {
     }
 
     static async delete(id: number): Promise<any> {
-        const sql = `
-          DELETE FROM issue 
-          WHERE
-              id = ?`;
+        const sql = `DELETE FROM issue WHERE id = ?`;
         try {
             const data = await sqlTool.execute(sql, [id]);
             return data;
