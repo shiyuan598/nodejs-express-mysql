@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
 import Issue from "../model/issue.model";
+import multer from "multer";
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // 响应处理
 const fullFilled = (response: Response, data: object | null) => {
@@ -38,12 +42,53 @@ export const getIssueById = async (request: Request, response: Response) => {
     }
 };
 
+export const getAttachmentById = async (request: Request, response: Response) => {
+    const id = parseInt(request.params.id);
+    try {
+        const result = await Issue.getAttachmentById(id);
+        const { attachment, filename } = result;
+
+        if (attachment) {
+            // 设置适当的 content-type
+            let contentType = "application/octet-stream";
+            if (filename) {
+                const ext = filename.split('.').pop()?.toLowerCase();
+                switch (ext) {
+                    case 'jpg':
+                    case 'jpeg':
+                        contentType = 'image/jpeg';
+                        break;
+                    case 'png':
+                        contentType = 'image/png';
+                        break;
+                    case 'bmp':
+                        contentType = 'image/bmp';
+                        break;
+                    case 'webp':
+                        contentType = 'image/webp';
+                        break;
+                }
+            }
+            response.set("Content-Type", contentType);
+            response.send(attachment);
+        } else {
+            response.status(404).send("Attachment not found");
+        }
+    } catch (err) {
+        errorHandler(response, err as Error);
+    }
+};
+
 export const addIssue = async (request: Request, response: Response) => {
+    const { version, title, content } = request.body;
+    const attachment = request.file?.buffer;
+    const filename = request.file?.originalname;
     const issue = new Issue({
-        version: request.body.version,
-        title: request.body.title,
-        content: request.body.content,
-        attachment: request.body.attachment
+        version,
+        title,
+        content,
+        attachment,
+        filename
     });
     try {
         const data = await Issue.create(issue);
@@ -54,12 +99,16 @@ export const addIssue = async (request: Request, response: Response) => {
 };
 
 export const updateIssue = async (request: Request, response: Response) => {
-    const id = parseInt(request.params.id);
+    const id = parseInt(request.body.id);
+    const { version, title, content } = request.body;
+    const attachment = request.file?.buffer;
+    const filename = request.file?.originalname;
     const issue = new Issue({
-        version: request.body.version,
-        title: request.body.title,
-        content: request.body.content,
-        attachment: request.body.attachment
+        version,
+        title,
+        content,
+        attachment,
+        filename
     });
     try {
         const data = await Issue.update(id, issue);
@@ -78,3 +127,5 @@ export const deleteIssue = async (request: Request, response: Response) => {
         errorHandler(response, err as Error);
     }
 };
+
+export const uploadMiddleware = upload.single("attachment");
