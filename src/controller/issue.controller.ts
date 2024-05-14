@@ -12,95 +12,69 @@ const fullFilled = (response: Response, data: object | null) => {
 
 // 异常处理
 const errorHandler = (response: Response, err: Error) => {
-    response &&
-        response.status(500).json({
-            code: 1,
-            msg: err.toString()
-        });
+    response.status(500).json({
+        code: 1,
+        msg: err.toString()
+    });
 };
 
-export const getIssueList = (request: Request, response: Response) => {
+export const getIssueList = async (request: Request, response: Response) => {
+    const { version, start, end } = request.query;
     try {
-        const issue = new Issue({
-            version: "1.0",
-            title: "Example Issue",
-            content: "This is an example issue content.",
-            attachment: null, // 如果有附件，设置附件路径；如果没有附件，设置为 null
-            state: "open",
-            desc: "This is an example issue description."
-        });
-        Issue.create(issue, (err: Error | null, data: any) => {
-            if (err) {
-                errorHandler(response, err);
-            } else {
-                fullFilled(response, data);
-            }
-        });
-    } catch (error) {
-        errorHandler(response, error as Error);
+        const data = await Issue.getAll(version?.toString(), start?.toString(), end?.toString());
+        fullFilled(response, data);
+    } catch (err) {
+        errorHandler(response, err as Error);
     }
 };
 
-export const addIssue = (request: Request, response: Response) => {
+export const getIssueById = async (request: Request, response: Response) => {
+    const id = parseInt(request.params.id);
     try {
-        const issue = new Issue({
-            version: "1.0",
-            title: "Example Issue",
-            content: "This is an example issue content.",
-            attachment: null, // 如果有附件，设置附件路径；如果没有附件，设置为 null
-            state: "open",
-            desc: "This is an example issue description."
-        });
-        Issue.create(issue, (err: Error | null, data: any) => {
-            if (err) {
-                errorHandler(response, err);
-            } else {
-                fullFilled(response, data);
-            }
-        });
-    } catch (error) {
-        errorHandler(response, error as Error);
+        const data = await Issue.getById(id);
+        fullFilled(response, data);
+    } catch (err) {
+        errorHandler(response, err as Error);
     }
 };
-export const updateIssue = (request: Request, response: Response) => {
+
+export const addIssue = async (request: Request, response: Response) => {
+    const issue = new Issue({
+        version: request.body.version,
+        title: request.body.title,
+        content: request.body.content,
+        attachment: request.body.attachment
+    });
     try {
-        const issue = new Issue({
-            version: "1.0",
-            title: "Example Issue",
-            content: "This is an example issue content.",
-            attachment: null, // 如果有附件，设置附件路径；如果没有附件，设置为 null
-            state: "open",
-            desc: "This is an example issue description."
-        });
-        Issue.create(issue, (err: Error | null, data: any) => {
-            if (err) {
-                errorHandler(response, err);
-            } else {
-                fullFilled(response, data);
-            }
-        });
-    } catch (error) {
-        errorHandler(response, error as Error);
+        const data = await Issue.create(issue);
+        fullFilled(response, data);
+    } catch (err) {
+        errorHandler(response, err as Error);
     }
 };
-export const deleteIssue = (request: Request, response: Response) => {
+
+export const updateIssue = async (request: Request, response: Response) => {
+    const id = parseInt(request.params.id);
+    const issue = new Issue({
+        version: request.body.version,
+        title: request.body.title,
+        content: request.body.content,
+        attachment: request.body.attachment
+    });
     try {
-        const issue = new Issue({
-            version: "1.0",
-            title: "Example Issue",
-            content: "This is an example issue content.",
-            attachment: null, // 如果有附件，设置附件路径；如果没有附件，设置为 null
-            state: "open",
-            desc: "This is an example issue description."
-        });
-        Issue.create(issue, (err: Error | null, data: any) => {
-            if (err) {
-                errorHandler(response, err);
-            } else {
-                fullFilled(response, data);
-            }
-        });
-    } catch (error) {
-        errorHandler(response, error as Error);
+        const data = await Issue.update(id, issue);
+        fullFilled(response, data);
+    } catch (err) {
+        errorHandler(response, err as Error);
+    }
+};
+
+export const deleteIssue = async (request: Request, response: Response) => {
+    const id = parseInt(request.params.id);
+    try {
+        const data = await Issue.delete(id);
+        fullFilled(response, data);
+    } catch (err) {
+        errorHandler(response, err as Error);
     }
 };

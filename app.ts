@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // 注册模块路由
-app.use("/api/release", releaseRoutes);
+app.use("/api/feature", releaseRoutes);
 app.use("/api/feedback", feedbackRoutes);
 
 // 处理根路径的HTTP请求

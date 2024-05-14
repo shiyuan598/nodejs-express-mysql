@@ -1,13 +1,16 @@
 import express, { Router } from "express";
-import { getIssueList, addIssue, updateIssue, deleteIssue } from "../controller/issue.controller";
-import { addReply, deleteReply} from "../controller/reply.controller"
+import { getIssueList, getIssueById, addIssue, updateIssue, deleteIssue } from "../controller/issue.controller";
+import { addReply, updateReply, deleteReply } from "../controller/reply.controller";
+
 const router: Router = express.Router();
 
-router.get("/issue/list", getIssueList);
-router.get("/issue/add", addIssue);
-router.post("/issue/update", updateIssue);
-router.post("/issue/delete", deleteIssue);
-router.post("/reply/add", addReply);
-router.post("/reply/delete", deleteReply);
+router.get("/issues", getIssueList);
+router.get("/issues/:id", getIssueById);
+router.post("/issues", addIssue);
+router.put("/issues/:id", updateIssue);
+router.delete("/issues/:id", deleteIssue);
+router.post("/replies", addReply);
+router.put("/replies/:id", updateReply);
+router.delete("/replies/:id", deleteReply);
 
 export default router;

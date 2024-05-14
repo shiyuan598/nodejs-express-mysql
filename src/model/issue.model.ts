@@ -1,117 +1,167 @@
 import sqlTool from "../utils/sqlTool";
 
-interface Issue {
-  id?: number;
-  version: string;
-  title: string;
-  content: string;
-  attachment: string | null;
-  createtime?: string;
-  updatetime?: string;
-  state: string;
-  desc: string | null;
+interface IIssue {
+    id?: number;
+    version?: string;
+    title?: string;
+    content: string;
+    attachment?: string;
+    createtime?: string;
+    updatetime?: string;
+    state?: number;
 }
 
 class Issue {
-  constructor(issue: Issue) {
-    this.version = issue.version;
-    this.title = issue.title;
-    this.content = issue.content;
-    this.attachment = issue.attachment;
-    this.state = issue.state;
-    this.desc = issue.desc;
-  }
+    version?: string;
+    title?: string;
+    content: string;
+    attachment?: string;
+    state?: number;
 
-  static create(newIssue: Issue, result: (err: Error | null, data: any) => void): void {
-    try {
-        const {version, title, content, attachment, state, desc} = newIssue;
-        const sql = "INSERT INTO issue(`version`, `title`, `content`, `attachment`, `state`, `desc`) VALUES (?, ?, ?, ?, ?, ?)";
-        sqlTool.execute(sql, [version, title, content, attachment, state, desc]);
-        
-    } catch (error) {
-        
+    constructor(issue: IIssue) {
+        this.version = issue.version;
+        this.title = issue.title;
+        this.content = issue.content;
+        this.attachment = issue.attachment;
+        this.state = issue.state;
     }
-  }
 
-//   static findById(id: number, result: (err: Error | null, data: any) => void): void {
-//     sql.query(`SELECT * FROM issue WHERE id = ${id}`, (err, res) => {
-//       if (err) {
-//         console.log("error: ", err);
-//         result(err, null);
-//         return;
-//       }
+    static async create(newIssue: IIssue): Promise<any> {
+        const columns = [];
+        const values = [];
+        const params = [];
 
-//       if (res.length) {
-//         console.log("found issue: ", res[0]);
-//         result(null, res[0]);
-//         return;
-//       }
+        if (newIssue.version !== undefined) {
+            columns.push('`version`');
+            values.push('?');
+            params.push(newIssue.version);
+        }
+        if (newIssue.title !== undefined) {
+            columns.push('`title`');
+            values.push('?');
+            params.push(newIssue.title);
+        }
+        if (newIssue.content !== undefined) {
+            columns.push('`content`');
+            values.push('?');
+            params.push(newIssue.content);
+        }
+        if (newIssue.attachment !== undefined) {
+            columns.push('`attachment`');
+            values.push('?');
+            params.push(newIssue.attachment);
+        }
 
-//       // not found issue with the id
-//       result({ kind: "not_found" }, null);
-//     });
-//   }
+        const sql = `INSERT INTO issue(${columns.join(', ')}) VALUES (${values.join(', ')})`;
 
-//   static getAll(title: string, result: (err: Error | null, data: any) => void): void {
-//     let query = "SELECT * FROM issue";
+        try {
+            const data = await sqlTool.execute(sql, params);
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
 
-//     if (title) {
-//       query += ` WHERE title LIKE '%${title}%'`;
-//     }
+    static async getAll(version?: string, start?: string, end?: string): Promise<any> {
+        let sql = `SELECT i.id AS issueId, i.version AS issueVersion, i.title AS issueTitle, 
+                        i.content AS issueContent, i.attachment AS issueAttachment, 
+                        i.createtime AS issueCreatetime, i.updatetime AS issueUpdatetime, 
+                        i.state AS issueState,
+                        r.id AS replyId, r.issue_id AS replyIssueId, 
+                        r.content AS replyContent, r.attachment AS replyAttachment
+                    FROM issue i
+                    LEFT JOIN reply r ON i.id = r.issue_id
+                    WHERE 1 = 1`;
+        const params = [];
 
-//     sql.query(query, (err, res) => {
-//       if (err) {
-//         console.log("error: ", err);
-//         result(null, err);
-//         return;
-//       }
+        if (version) {
+            sql += ` AND i.version = ?`;
+            params.push(version);
+        }
 
-//       console.log("issues: ", res);
-//       result(null, res);
-//     });
-//   }
+        if (start) {
+            sql += ` AND DATE(i.createtime) >= ?`;
+            params.push(start);
+        }
 
-//   static updateById(id: number, issue: Issue, result: (err: Error | null, data: any) => void): void {
-//     sql.query(
-//       "UPDATE issue SET version = ?, title = ?, content = ?, attachment = ?, state = ?, `desc` = ? WHERE id = ?",
-//       [issue.version, issue.title, issue.content, issue.attachment, issue.state, issue.desc, id],
-//       (err, res) => {
-//         if (err) {
-//           console.log("error: ", err);
-//           result(null, err);
-//           return;
-//         }
+        if (end) {
+            sql += ` AND DATE(i.createtime) <= ?`;
+            params.push(end);
+        }
+        try {
+            const data = await sqlTool.execute(sql, params);
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
 
-//         if (res.affectedRows == 0) {
-//           // not found issue with the id
-//           result({ kind: "not_found" }, null);
-//           return;
-//         }
+    static async getById(id: number): Promise<any> {
+        const sql = `
+              SELECT i.id AS issueId, i.version AS issueVersion, i.title AS issueTitle, 
+                  i.content AS issueContent, i.attachment AS issueAttachment, 
+                  i.createtime AS issueCreatetime, i.updatetime AS issueUpdatetime, 
+                  i.state AS issueState,
+                  r.id AS replyId, r.issue_id AS replyIssueId, 
+                  r.content AS replyContent, r.attachment AS replyAttachment
+              FROM issue i
+              LEFT JOIN reply r ON i.id = r.issue_id
+              WHERE i.id = ?`;
+        try {
+            const data = await sqlTool.execute(sql, [id]);
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
 
-//         console.log("updated issue: ", { id: id, ...issue });
-//         result(null, { id: id, ...issue });
-//       }
-//     );
-//   }
+    static async update(id: number, updatedIssue: IIssue): Promise<any> {
+        const columns = [];
+        const params = [];
 
-//   static remove(id: number, result: (err: Error | null, data: any) => void): void {
-//     sql.query("DELETE FROM issue WHERE id = ?", id, (err, res) => {
-//       if (err) {
-//         console.log("error: ", err);
-//         result(null, err);
-//         return;
-//       }
+        if (updatedIssue.version !== undefined) {
+            columns.push('version = ?');
+            params.push(updatedIssue.version);
+        }
+        if (updatedIssue.title !== undefined) {
+            columns.push('title = ?');
+            params.push(updatedIssue.title);
+        }
+        if (updatedIssue.content !== undefined) {
+            columns.push('content = ?');
+            params.push(updatedIssue.content);
+        }
+        if (updatedIssue.attachment !== undefined) {
+            columns.push('attachment = ?');
+            params.push(updatedIssue.attachment);
+        }
 
-//       if (res.affectedRows == 0) {
-//         // not found issue with the id
-//         result({ kind: "not_found" }, null);
-//         return;
-//       }
+        params.push(id);
+        const sql = `
+              UPDATE issue 
+              SET ${columns.join(', ')},
+                  updatetime = CURRENT_TIMESTAMP
+              WHERE id = ?`;
 
-//       console.log("deleted issue with id: ", id);
-//       result(null, res);
-//     });
-//   }
+        try {
+            const data = await sqlTool.execute(sql, params);
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async delete(id: number): Promise<any> {
+        const sql = `
+              DELETE FROM issue 
+              WHERE id = ?`;
+        try {
+            const data = await sqlTool.execute(sql, [id]);
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 export default Issue;
