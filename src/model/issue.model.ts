@@ -64,10 +64,11 @@ class Issue {
     static async getAll(version?: string, start?: string, end?: string, limit?: number, offset?: number): Promise<any> {
         let sql = `SELECT i.id AS issueId, i.version AS issueVersion, i.title AS issueTitle, 
                     i.content AS issueContent, i.filename AS issueFilename,
-                    i.createtime AS issueCreatetime, i.updatetime AS issueUpdatetime, 
+                    DATE_FORMAT(i.createtime, '%Y-%m-%d %H:%i:%s') AS issueCreatetime, 
                     i.state AS issueState,
                     r.id AS replyId, r.issue_id AS replyIssueId, 
-                    r.content AS replyContent, r.filename AS replyFilename
+                    r.content AS replyContent, r.filename AS replyFilename,
+                    DATE_FORMAT(r.createtime, '%Y-%m-%d %H:%i:%s') AS replyCreatetime
                 FROM issue i
                 LEFT JOIN reply r ON i.id = r.issue_id
                 WHERE 1 = 1`;
@@ -109,10 +110,11 @@ class Issue {
         const sql = `
           SELECT i.id AS issueId, i.version AS issueVersion, i.title AS issueTitle, 
               i.content AS issueContent, i.filename AS issueFilename,
-              i.createtime AS issueCreatetime, i.updatetime AS issueUpdatetime, 
+              DATE_FORMAT(i.createtime, '%Y-%m-%d %H:%i:%s') AS issueCreatetime,
               i.state AS issueState,
               r.id AS replyId, r.issue_id AS replyIssueId, 
-              r.content AS replyContent, r.filename AS replyFilename
+              r.content AS replyContent, r.filename AS replyFilename,
+              DATE_FORMAT(r.createtime, '%Y-%m-%d %H:%i:%s') AS replyCreatetime
           FROM issue i
           LEFT JOIN reply r ON i.id = r.issue_id
           WHERE i.id = ?`;
@@ -159,7 +161,6 @@ class Issue {
             params.push(updatedIssue.filename);
         }
 
-        columns.push('updatetime = CURRENT_TIMESTAMP');
         params.push(id);
         
         const sql = `

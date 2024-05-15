@@ -3,6 +3,6 @@ import { getReleaseList, getReleaseDetail } from "../controller/release.controll
 const router: Router = express.Router();
 
 router.get("/releases", getReleaseList);
-router.get("/releases/:file", getReleaseDetail);
+router.get("/releases/info", getReleaseDetail);
 
 export default router;

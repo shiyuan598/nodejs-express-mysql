@@ -59,7 +59,7 @@ export const getAttachmentById = async (request: Request, response: Response) =>
             response.set("Content-Type", getContentType(filename));
             response.send(attachment);
         } else {
-            response.status(404).send("Attachment not found");
+            errorHandler(response, new Error("Attachment not found"));
         }
     } catch (err) {
         errorHandler(response, err as Error);

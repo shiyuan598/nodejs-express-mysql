@@ -31,7 +31,8 @@ export const getReleaseList = (request: Request, response: Response) => {
 
 export const getReleaseDetail = (request: Request, response: Response) => {
     try {
-        const filePath = request.params.file as string;
+        const filePath = request.query.filePath as string;
+        console.info("filePath:", filePath);
         const data = getReleaseInfo(filePath);
         fullFilled(response, data);
     } catch (error) {
