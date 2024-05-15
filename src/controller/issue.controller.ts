@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import multer from "multer";
-import {getContentType} from "../utils/fileTool";
+import { getContentType } from "../utils/fileTool";
 import Issue from "../model/issue.model";
 
 const storage = multer.memoryStorage();
@@ -24,9 +24,15 @@ const errorHandler = (response: Response, err: Error) => {
 };
 
 export const getIssueList = async (request: Request, response: Response) => {
-    const { version, start, end } = request.query;
+    const { version, start, end, limit, offset } = request.query;
     try {
-        const data = await Issue.getAll(version?.toString(), start?.toString(), end?.toString());
+        const data = await Issue.getAll(
+            version?.toString(),
+            start?.toString(),
+            end?.toString(),
+            limit ? parseInt(limit.toString(), 10) : undefined,
+            offset ? parseInt(offset.toString(), 10) : undefined
+        );
         fullFilled(response, data);
     } catch (err) {
         errorHandler(response, err as Error);

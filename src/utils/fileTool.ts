@@ -10,7 +10,6 @@ export function listFiles(directoryPath: string): FileItem[] {
         // 同步读取目录
         console.info("directoryPath:", directoryPath);
         const files = fs.readdirSync(directoryPath);
-        console.info("files:", files);
         files.forEach((file) => {
             const filePath = path.join(directoryPath, file);
             const stats = fs.statSync(filePath);

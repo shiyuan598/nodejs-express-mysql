@@ -61,7 +61,7 @@ class Issue {
         }
     }
 
-    static async getAll(version?: string, start?: string, end?: string): Promise<any> {
+    static async getAll(version?: string, start?: string, end?: string, limit?: number, offset?: number): Promise<any> {
         let sql = `SELECT i.id AS issueId, i.version AS issueVersion, i.title AS issueTitle, 
                     i.content AS issueContent, i.filename AS issueFilename,
                     i.createtime AS issueCreatetime, i.updatetime AS issueUpdatetime, 
@@ -87,6 +87,16 @@ class Issue {
             sql += ` AND DATE(i.createtime) <= ?`;
             params.push(end);
         }
+        sql += ` ORDER BY i.id DESC`;
+
+        if (limit !== undefined) {
+            sql += ` LIMIT ${limit}`;
+        }
+
+        if (offset !== undefined) {
+            sql += ` OFFSET ${offset}`;
+        }
+
         try {
             const data = await sqlTool.execute(sql, params);
             return data;
