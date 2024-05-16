@@ -1,4 +1,4 @@
-FROM node:17.6
+FROM node:18.19
 WORKDIR /home/server
 COPY build start.sh stop.sh /home/server
 

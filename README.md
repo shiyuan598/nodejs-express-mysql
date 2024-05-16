@@ -1,23 +1,22 @@
-# XWAYOS DOCS
+# XWAYOS DOCS BACKEND
 
 ### 启动
 
 ```
-node app.js
+npm run dev
 ```
 
-注：node v14.20.0
+注：node v18.19.0
 
-### 构建
-
-```
-ncc build app.js -m -o dist
-```
-
-需要@vercel/ncc 包
+### build
 
 ```
-npm install -g @vercel/ncc
+npm run build:prod
+```
+构建镜像，请先执行打包npm run build:prod
+
+```bash
+docker build -t xwayos-docs-backend:v0.1 .
 ```
 
 ### DEPLOY
@@ -28,16 +27,10 @@ npm install -g @vercel/ncc
 docker network ls
 ```
 
-若无，先创建网络
+1.若无，先创建网络
 
 ```bash
 docker network create -d bridge xwayos-net
-```
-
-1.构建镜像
-
-```bash
-docker build -t xwayos-docs-backend:v0.1 .
 ```
 
 2.启动容器
