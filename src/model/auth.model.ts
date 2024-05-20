@@ -1,94 +1,62 @@
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import sqlTool from "../utils/sqlTool";
 
-interface IReply {
+const SECRET_KEY = "q;lgjiqmqq";
+
+interface IUser {
     id?: number;
-    issueId?: number;
-    content?: string;
-    attachment?: Buffer | null;
-    filename?: string;
+    username: string;
+    password: string;
 }
 
-class Reply {
-    issueId?: number;
-    content?: string;
-    attachment?: Buffer | null;
-    filename?: string;
+class User {
+    username: string;
+    password: string;
 
-    constructor(reply: IReply) {
-        this.issueId = reply.issueId;
-        this.content = reply.content;
-        this.attachment = reply.attachment;
-        this.filename = reply.filename;
+    constructor(user: IUser) {
+        this.username = user.username;
+        this.password = user.password;
     }
 
-    static async create(newReply: IReply): Promise<any> {
-        const columns = [];
-        const values = [];
-        const params = [];
+    static async create(newUser: IUser): Promise<any> {
+        const { username, password } = newUser;
+        const saltRounds = 10;
+        const salt = bcrypt.genSaltSync(saltRounds);
+        const hashedPassword = bcrypt.hashSync(password, salt);
 
-        if (newReply.issueId !== undefined) {
-            columns.push("`issue_id`");
-            values.push("?");
-            params.push(newReply.issueId);
-        }
-        if (newReply.content !== undefined) {
-            columns.push("`content`");
-            values.push("?");
-            params.push(newReply.content);
-        }
-        if (newReply.attachment !== undefined) {
-            columns.push("`attachment`");
-            values.push("?");
-            params.push(newReply.attachment);
-        }
-        if (newReply.filename !== undefined) {
-            columns.push("`filename`");
-            values.push("?");
-            params.push(newReply.filename);
-        }
-
-        const sql = `INSERT INTO reply(${columns.join(", ")}) VALUES (${values.join(", ")})`;
+        const sql = "INSERT INTO user (username, password) VALUES (?, ?)";
         try {
-            const data = await sqlTool.execute(sql, params);
+            const data = await sqlTool.execute(sql, [username, hashedPassword]);
             return data;
         } catch (error) {
             throw error;
         }
     }
 
-    static async update(id: number, updatedReply: IReply): Promise<any> {
-        const columns = [];
-        const params = [];
-
-        if (updatedReply.content !== undefined) {
-            columns.push("content = ?");
-            params.push(updatedReply.content);
+    static async updatePassword(username: string, newPassword: string, currentPassword: string): Promise<any> {
+        const user = await this.findByUsername(username);
+        if (!user) {
+            throw new Error("用户不存在");
         }
-        if (updatedReply.attachment !== undefined) {
-            columns.push("attachment = ?");
-            params.push(updatedReply.attachment);
-        }
-        if (updatedReply.filename !== undefined) {
-            columns.push("filename = ?");
-            params.push(updatedReply.filename);
+        if (!bcrypt.compareSync(currentPassword, user.password)) {
+            throw new Error("当前密码错误");
         }
 
-        params.push(id);
-        const sql = `
-          UPDATE reply 
-          SET ${columns.join(", ")}
-          WHERE id = ?`;
+        const saltRounds = 10;
+        const hashedNewPassword = bcrypt.hashSync(newPassword, saltRounds);
 
+        const updateSql = "UPDATE user SET password = ? WHERE username = ?";
         try {
-            const data = await sqlTool.execute(sql, params);
-            return data;
+            await sqlTool.execute(updateSql, [hashedNewPassword, username]);
+            return { message: "密码修改成功" };
         } catch (error) {
             throw error;
         }
     }
 
     static async delete(id: number): Promise<any> {
-        const sql = `DELETE FROM reply WHERE id = ?`;
+        const sql = `DELETE FROM user WHERE id = ?`;
         try {
             const data = await sqlTool.execute(sql, [id]);
             return data;
@@ -97,15 +65,58 @@ class Reply {
         }
     }
 
-    static async getAttachmentById(id: number): Promise<any> {
-        const sql = `SELECT attachment, filename FROM reply WHERE id = ?`;
+    static async findByUsername(username: string): Promise<IUser | null> {
+        const sql = "SELECT * FROM user WHERE username = ?";
         try {
-            const data = await sqlTool.execute(sql, [id]);
-            return data[0];
+            const data = await sqlTool.execute(sql, [username]);
+            return data[0] || null;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async saveTokenToDB(token: string, userId: number): Promise<any> {
+        const sql = "INSERT INTO token (token, user_id) VALUES (?, ?)";
+        try {
+            const data = await sqlTool.execute(sql, [token, userId]);
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async deleteTokenFromDB(token: string): Promise<any> {
+        const sql = "DELETE FROM token WHERE token = ?";
+        try {
+            const data = await sqlTool.execute(sql, [token]);
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async verifyToken(token: string): Promise<number | null> {
+        try {
+            const decodedToken: any = jwt.verify(token, SECRET_KEY);
+            const [rows] = await sqlTool.execute("SELECT * FROM token WHERE token = ?", [token]);
+            if (rows.length === 0) {
+                return null;
+            }
+            return decodedToken.userId;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    static async getAllUsers(): Promise<IUser[]> {
+        const sql = "SELECT id, username FROM user";
+        try {
+            const data = await sqlTool.execute(sql, []);
+            return data;
         } catch (error) {
             throw error;
         }
     }
 }
 
-export default Reply;
+export default User;

@@ -1,7 +1,7 @@
 import express, { Router } from "express";
 import { getIssueList, getIssueById, getAttachmentById, addIssue, updateIssue, deleteIssue, uploadMiddleware } from "../controller/issue.controller";
 import { addReply, updateReply, getAttachmentById as getReplyAttachmentById, deleteReply, uploadMiddleware as replyUploadMiddleware } from "../controller/reply.controller";
-import { authenticate } from "../controller/authenticate";
+import { authenticate } from "../controller/auth.controller";
 
 const router: Router = express.Router();
 
