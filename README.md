@@ -36,7 +36,7 @@ docker network create -d bridge xwayos-net
 2.启动容器
 
 ```bash
-docker run -itd --volume /home/xway/version-files:/home/version-files --name xwayos-docs-backend --restart=always --network xwayos-net -p 9042:9040 -d xwayos-docs-backend:v0.1
+docker run -itd --volume /home/xway/version-files:/home/version-files --name xwayos-docs-backend --restart=always --network xwayos-net -p 9042:9040 -d xwayos-docs-backend:v0.2
 ```
 
 3.进入容器
